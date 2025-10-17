@@ -1,24 +1,25 @@
-import zio._
-import zio.config._
-import zio.config.typesafe._
-import zio.config.magnolia._
-import _root_.config.Configuration._
 import java.io.IOException
-import zio.logging.backend.SLF4J
-import zio.logging.{loggerName, consoleJsonLogger}
-import zio.logging.LogFormat
-import zio.logging.ConsoleLoggerConfig
+
+import _root_.config.Configuration.*
 import services.Cbr
+import zio.*
+import zio.config.*
+import zio.config.magnolia.*
+import zio.config.typesafe.*
+import zio.http.*
+import zio.logging.ConsoleLoggerConfig
+import zio.logging.LogFormat
+import zio.logging.backend.SLF4J
+import zio.logging.consoleJsonLogger
+import zio.logging.loggerName
 
 
 object Gtbot4s extends ZIOAppDefault:
 
-    // val config: ConsoleLoggerConfig = ConsoleLoggerConfig.default.format.toJsonLogger
-
     override val bootstrap: ZLayer[ZIOAppArgs, Any, Any] =
         Runtime.removeDefaultLoggers >>> SLF4J.slf4j
 
-    val app: ZIO[AppConfig & Cbr, Throwable, Unit] = for
+    val app = for
         _ <- ZIO.logInfo(">>> APPLICATION START <<<") @@ loggerName("Gtbot4s")
         appConfig <- ZIO.service[AppConfig]
         _ <- ZIO.logInfo(s"AppConfig: ${appConfig}") @@ loggerName("Gtbot4s")
@@ -31,4 +32,8 @@ object Gtbot4s extends ZIOAppDefault:
             failure => ZIO.logErrorCause(failure), 
             success => ZIO.logInfo(">>> SUCCESS! <<<") @@ loggerName("Gtbot4s")
         )
-        .provide(AppConfig.layer, Cbr.live)
+        .provide(
+            AppConfig.layer, 
+            Cbr.live,
+            Client.default
+        )

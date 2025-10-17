@@ -1,11 +1,12 @@
 package config
 
-import zio._
-import zio.config._
-import zio.config.typesafe._
-import zio.config.magnolia._
-import zio.config.derivation.name
 import java.io.IOException
+
+import zio.*
+import zio.config.*
+import zio.config.derivation.name
+import zio.config.magnolia.*
+import zio.config.typesafe.*
 
 object Configuration:
 
@@ -22,7 +23,7 @@ object Configuration:
     final case class TelegramConfig(
         token: TelegramToken,
         chatID: TelegramChatID,
-        baseURL: String,
+        baseURL: TelegramURL,
     )
 
     final case class WeatherApiConfig(
@@ -51,7 +52,6 @@ object Configuration:
             ZLayer.fromZIO(appConfigZIO)
                 .tap(configEnv => 
                     val appConfig = configEnv.get[AppConfig]
-                    // Console.printLine(s"Application started with config: $appConfig")
                     ZIO.logInfo(s"Application started with config: $appConfig")
                 )
                 .tapError(err => Console.printError(err))

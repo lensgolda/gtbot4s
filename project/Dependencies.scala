@@ -35,7 +35,12 @@ object Dependencies {
     "org.slf4j" % "slf4j-api" % "2.0.17",
   
     // For JSON layout
-    "com.fasterxml.jackson.core" % "jackson-databind" % "2.19.2"
+    "com.fasterxml.jackson.core" % "jackson-databind" % "2.19.2",
   )
+
+  val scalafixDependencies = 
+    "com.github.liancheng" % "organize-imports_2.13" % "0.6.0" excludeAll(
+    ExclusionRule(organization = "org.scala-lang.modules"),
+  ),
 
 }
