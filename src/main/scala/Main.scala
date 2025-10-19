@@ -13,7 +13,6 @@ import zio.logging.backend.SLF4J
 import zio.logging.consoleJsonLogger
 import zio.logging.loggerName
 
-
 object Gtbot4s extends ZIOAppDefault:
 
     override val bootstrap: ZLayer[ZIOAppArgs, Any, Any] =
@@ -23,17 +22,19 @@ object Gtbot4s extends ZIOAppDefault:
         _ <- ZIO.logInfo(">>> APPLICATION START <<<") @@ loggerName("Gtbot4s")
         appConfig <- ZIO.service[AppConfig]
         _ <- ZIO.logInfo(s"AppConfig: ${appConfig}") @@ loggerName("Gtbot4s")
-        cbr <- ZIO.serviceWithZIO[Cbr](_.fetchAll)
-        _ <- ZIO.foreachDiscard(cbr)(rate => ZIO.logInfo(s"Rate: ${rate}"))
+        ratesList <- ZIO.serviceWithZIO[Cbr](_.fetchAll)
+        _ <- ZIO.foreachDiscard(ratesList)(rate =>
+            ZIO.logInfo(s"Rate: ${rate}")
+        )
     yield ()
-    
+
     override val run = app
         .foldCauseZIO(
-            failure => ZIO.logErrorCause(failure), 
-            success => ZIO.logInfo(">>> SUCCESS! <<<") @@ loggerName("Gtbot4s")
+          failure => ZIO.logErrorCause(failure),
+          success => ZIO.logInfo(">>> SUCCESS! <<<") @@ loggerName("Gtbot4s")
         )
         .provide(
-            AppConfig.layer, 
-            Cbr.live,
-            Client.default
+          AppConfig.layer,
+          Cbr.live,
+          Client.default
         )
