@@ -27,34 +27,26 @@ final class TelegramLive(config: AppConfig, httpClient: Client)
 
     private val message = s"Test message"
     private val telegramUserID = config.telegram.lensID.value
-
-    private val makeSendRequest: ZIO[Any, Throwable, Request] =
-        ZIO.attempt(
-          Request
-              .post(
-                s"bot${config.telegram.token}/sendMessage",
-                Body.from[SendMessageRequest](
-                  SendMessageRequest(message, telegramUserID)
-                )
-              )
-              .addHeaders(
-                Headers(
-                  Header.ContentType(MediaType.application.json),
-                  Header.Accept(MediaType.application.json)
-                )
-              )
-        )
+    private val headers = Headers(
+      Header.ContentType(MediaType.application.json),
+      Header.Accept(MediaType.application.json)
+    )
 
     override def sendMessage(message: String): ZIO[Any, Throwable, Unit] =
         for
-            url <- ZIO.fromEither(URL.decode(config.telegram.baseURL.toString))
-            req <- makeSendRequest
-            resp <- httpClient
-                .url(url)
-                .batched
-                .request(req)
-            _ <- ZIO.debug(s"Response Status: ${resp.status}")
-            _ <- ZIO.debug(s"Response Body: ${resp.body.asString}")
+            baseUrl <- ZIO.fromEither(
+              URL.decode(config.telegram.baseURL.toString)
+            )
+            resp <- httpClient.batched
+                .url(baseUrl)
+                .addHeaders(headers)
+                .post(s"bot${config.telegram.token}/sendMessage")(
+                  Body.from[SendMessageRequest](
+                    SendMessageRequest(message, telegramUserID)
+                  )
+                )
+            _ <- ZIO.logInfo(s"Response Status: ${resp.status}")
+            _ <- ZIO.logInfo(s"Response Body: ${resp.body.asString}")
         yield ()
 
 object TelegramService:

@@ -29,6 +29,7 @@ object Gtbot4s extends ZIOAppDefault:
         //     ZIO.logInfo(s"Rate: ${rate}")
         // )
         _ <- ZIO.serviceWithZIO[TelegramService](_.sendMessage(s"Testing"))
+    // result <- ZIO.collectAllPar(List(effect1, effect2))
     yield ()
 
     override val run = app
