@@ -11,13 +11,6 @@ trait TelegramService {
     def sendMessage(message: String): ZIO[Any, Throwable, Unit]
 }
 
-sealed trait Peer
-object Peer:
-    final case class PeerChat(chatID: Long) extends Peer
-    final case class PeerUser(userID: Long) extends Peer
-
-    given Schema[Peer] = DeriveSchema.gen[Peer]
-
 final case class SendMessageRequest(
     text: String,
     @fieldName("chat_id") chatID: Long
@@ -32,16 +25,16 @@ final class TelegramLive(config: AppConfig, httpClient: Client)
 
     import SendMessageRequest._
 
-    private def makeSendRequest(message: String): ZIO[Any, Throwable, Request] =
+    private val message = s"Test message"
+    private val telegramUserID = config.telegram.lensID.value
+
+    private val makeSendRequest: ZIO[Any, Throwable, Request] =
         ZIO.attempt(
           Request
               .post(
                 s"bot${config.telegram.token}/sendMessage",
                 Body.from[SendMessageRequest](
-                  SendMessageRequest(
-                    message,
-                    Peer.PeerUser(config.telegram.lensID.value).userID
-                  )
+                  SendMessageRequest(message, telegramUserID)
                 )
               )
               .addHeaders(
@@ -55,7 +48,7 @@ final class TelegramLive(config: AppConfig, httpClient: Client)
     override def sendMessage(message: String): ZIO[Any, Throwable, Unit] =
         for
             url <- ZIO.fromEither(URL.decode(config.telegram.baseURL.toString))
-            req <- makeSendRequest(message)
+            req <- makeSendRequest
             resp <- httpClient
                 .url(url)
                 .batched
