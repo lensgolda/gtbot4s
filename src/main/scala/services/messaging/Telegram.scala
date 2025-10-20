@@ -52,20 +52,14 @@ final class TelegramLive(config: AppConfig, httpClient: Client)
               )
         )
 
-    private def telegramSendMessageReq(
-        message: String
-    ): ZIO[Any, Throwable, Response] = for
-        url <- ZIO.fromEither(URL.decode(config.telegram.baseURL.toString))
-        req <- makeSendRequest(message)
-        resp <- httpClient
-            .url(url)
-            .batched
-            .request(req)
-    yield resp
-
     override def sendMessage(message: String): ZIO[Any, Throwable, Unit] =
         for
-            resp <- telegramSendMessageReq(message)
+            url <- ZIO.fromEither(URL.decode(config.telegram.baseURL.toString))
+            req <- makeSendRequest(message)
+            resp <- httpClient
+                .url(url)
+                .batched
+                .request(req)
             _ <- ZIO.debug(s"Response Status: ${resp.status}")
             _ <- ZIO.debug(s"Response Body: ${resp.body.asString}")
         yield ()
