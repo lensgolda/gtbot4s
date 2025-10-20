@@ -12,6 +12,8 @@ import zio.logging.LogFormat
 import zio.logging.backend.SLF4J
 import zio.logging.consoleJsonLogger
 import zio.logging.loggerName
+import services.messaging.TelegramLive
+import services.messaging.TelegramService
 
 object Gtbot4s extends ZIOAppDefault:
 
@@ -22,10 +24,11 @@ object Gtbot4s extends ZIOAppDefault:
         _ <- ZIO.logInfo(">>> APPLICATION START <<<") @@ loggerName("Gtbot4s")
         appConfig <- ZIO.service[AppConfig]
         _ <- ZIO.logInfo(s"AppConfig: ${appConfig}") @@ loggerName("Gtbot4s")
-        ratesList <- ZIO.serviceWithZIO[Cbr](_.fetchAll)
-        _ <- ZIO.foreachDiscard(ratesList)(rate =>
-            ZIO.logInfo(s"Rate: ${rate}")
-        )
+        // ratesList <- ZIO.serviceWithZIO[Cbr](_.fetchAll)
+        // _ <- ZIO.foreachDiscard(ratesList)(rate =>
+        //     ZIO.logInfo(s"Rate: ${rate}")
+        // )
+        _ <- ZIO.serviceWithZIO[TelegramService](_.sendMessage(s"Testing"))
     yield ()
 
     override val run = app
@@ -35,6 +38,7 @@ object Gtbot4s extends ZIOAppDefault:
         )
         .provide(
           AppConfig.layer,
-          Cbr.live,
+          //   Cbr.live,
+          TelegramService.live,
           Client.default
         )

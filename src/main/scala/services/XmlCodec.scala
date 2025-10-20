@@ -1,15 +1,22 @@
 package services
 
+import java.io.BufferedInputStream
+import java.io.ByteArrayInputStream
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
 import zio.ZIO
 import zio.ZLayer
-// import scala.xml._
+import zio.http.Body
 
-trait XmlCodec {
-  def decode[A](xml: String): ZIO[Any, Throwable, A]
-}
+import scala.xml.*
 
-final class XmlCodecLive extends XmlCodec:
-    override def decode[A](xml: String): ZIO[Any, Throwable, A] = ???
-        // ZIO.attempt(
-            
-        // )
+object XmlCodec:
+    extension (data: Body)
+        def asXmlZIO: ZIO[Any, Throwable, Elem] = for
+            bytes <- data.asArray
+            bis <- ZIO.attempt(
+              BufferedInputStream(ByteArrayInputStream(bytes))
+            )
+            xmlDoc <- ZIO.attempt(XML.load(bis))
+        yield xmlDoc
