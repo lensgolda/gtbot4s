@@ -1,4 +1,4 @@
-package services.messaging
+package services
 
 import _root_.config.Configuration.*
 import zio.*

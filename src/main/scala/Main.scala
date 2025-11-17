@@ -2,8 +2,8 @@ import java.io.IOException
 
 import _root_.config.Configuration.*
 import services.Cbr
-import services.messaging.TelegramLive
-import services.messaging.TelegramService
+import services.TelegramLive
+import services.TelegramService
 import zio.*
 import zio.config.*
 import zio.config.magnolia.*
