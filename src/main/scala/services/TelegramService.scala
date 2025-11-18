@@ -50,10 +50,10 @@ final class TelegramLive(config: AppConfig, httpClient: Client)
         yield ()
 
 object TelegramService:
+    private val telegramServiceZIO = for
+        appConfig <- ZIO.service[AppConfig]
+        client <- ZIO.service[Client]
+    yield new TelegramLive(appConfig, client)
+
     val live: ZLayer[AppConfig & Client, Throwable, TelegramService] =
-        ZLayer(
-          for
-              appConfig <- ZIO.service[AppConfig]
-              client <- ZIO.service[Client]
-          yield new TelegramLive(appConfig, client)
-        )
+        ZLayer.fromZIO(telegramServiceZIO)

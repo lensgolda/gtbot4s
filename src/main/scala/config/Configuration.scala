@@ -39,10 +39,16 @@ object Configuration:
         currencies: Set[CbrCurrency]
     )
 
+    final case class GoogleCalendarConfig(
+        keyFile: String,
+        targetCalendar: String
+    )
+
     case class AppConfig(
         telegram: TelegramConfig,
         weatherapi: WeatherApiConfig,
-        cbr: CbrConfig
+        cbr: CbrConfig,
+        googleCalendar: GoogleCalendarConfig
     )
 
     object AppConfig:

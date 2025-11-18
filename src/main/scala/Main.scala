@@ -1,9 +1,9 @@
 import java.io.IOException
 
 import _root_.config.Configuration.*
-import services.Cbr
-import services.TelegramLive
-import services.TelegramService
+// import services.Cbr
+// import services.TelegramLive
+// import services.TelegramService
 import zio.*
 import zio.config.*
 import zio.config.magnolia.*
@@ -17,6 +17,7 @@ import zio.logging.LogFormat
 import zio.logging.backend.SLF4J
 import zio.logging.consoleJsonLogger
 import zio.logging.loggerName
+import services._
 
 object Gtbot4s extends ZIOAppDefault:
 
@@ -32,7 +33,13 @@ object Gtbot4s extends ZIOAppDefault:
         appConfig <- ZIO.service[AppConfig]
         _ <- ZIO.logInfo(s"AppConfig: ${appConfig}") @@ loggerName("Gtbot4s")
         // ratesList <- ZIO.serviceWithZIO[Cbr](_.fetchAll)
-        _ <- ZIO.serviceWithZIO[TelegramService](_.sendMessage(s"Testing"))
+        _ <- ZIO.logInfo(s"Fetching upcoming events ...")
+        events <- ZIO.serviceWithZIO[CalendarService](_.getUpcomingEvents(3))
+        _ <- ZIO.foreachDiscard(events)(event =>
+            Console.printLine(event)
+            ZIO.logInfo(s"Event: ${event.summary} at ${event.start.dateTime}")
+        )
+    // _ <- ZIO.serviceWithZIO[TelegramService](_.sendMessage("Testing"))
     // result <- ZIO.collectAllPar(List(effect1, effect2))
     yield ()
 
@@ -44,11 +51,13 @@ object Gtbot4s extends ZIOAppDefault:
         .provide(
           AppConfig.layer,
           //   Cbr.live,
-          TelegramService.live,
+          CalendarService.live,
+          //   TelegramService.live,
+          GoogleCalendarService.live
           // Zio Client & settings
-          Client.customized,
-          DnsResolver.default,
-          NettyClientDriver.live,
-          ZLayer.succeed(NettyConfig.default),
-          ZLayer.succeed(clientConfig)
+          //   Client.customized,
+          //   DnsResolver.default,
+          //   NettyClientDriver.live,
+          //   ZLayer.succeed(NettyConfig.default),
+          //   ZLayer.succeed(clientConfig)
         )

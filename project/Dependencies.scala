@@ -41,6 +41,11 @@ object Dependencies {
     val scalafixDependencies =
         "com.github.liancheng" % "organize-imports_2.13" % "0.6.0" excludeAll (
           ExclusionRule(organization = "org.scala-lang.modules")
-        ),
+        )
+
+    val googleapisDeps = Seq(
+      "com.google.apis" % "google-api-services-calendar" % "v3-rev20251028-2.0.0",
+      "com.google.auth" % "google-auth-library-oauth2-http" % "1.30.1"
+    )
 
 }

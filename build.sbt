@@ -19,6 +19,7 @@ lazy val root = project
       ),
       libraryDependencies ++= zioDeps
           ++ loggingDeps
+          ++ googleapisDeps
           ++ Seq("org.scala-lang.modules" %% "scala-xml" % "2.4.0"),
       libraryDependencies += scalafixDependencies,
       Compile / run / javaOptions ++= Seq(
