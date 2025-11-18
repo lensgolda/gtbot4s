@@ -23,6 +23,13 @@ case class CalendarEvent(
     updated: ZonedDateTime
 ) derives JsonCodec
 
+case class GoogleCalendar(
+    id: String,
+    summary: String,
+    description: String,
+    primary: Boolean
+) derives JsonCodec
+
 case class EventDateTime(
     date: Option[String],
     dateTime: Option[ZonedDateTime],

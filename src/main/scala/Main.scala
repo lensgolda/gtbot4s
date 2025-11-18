@@ -33,8 +33,14 @@ object Gtbot4s extends ZIOAppDefault:
         appConfig <- ZIO.service[AppConfig]
         _ <- ZIO.logInfo(s"AppConfig: ${appConfig}") @@ loggerName("Gtbot4s")
         // ratesList <- ZIO.serviceWithZIO[Cbr](_.fetchAll)
-        _ <- ZIO.logInfo(s"Fetching upcoming events ...")
-        events <- ZIO.serviceWithZIO[CalendarService](_.getUpcomingEvents(3))
+        calendars <- ZIO.serviceWithZIO[CalendarService](_.getCalendarList())
+
+        events <- ZIO.serviceWithZIO[CalendarService](_.getUpcomingEvents(10))
+        _ <- ZIO.foreachDiscard(calendars)(calendar =>
+            ZIO.logInfo(
+              s"Calendar length: ${calendars.length}, ${calendar.id}, ${calendar.summary}, ${calendar.description}, ${calendar.primary}"
+            )
+        )
         _ <- ZIO.foreachDiscard(events)(event =>
             Console.printLine(event)
             ZIO.logInfo(s"Event: ${event.summary} at ${event.start.dateTime}")

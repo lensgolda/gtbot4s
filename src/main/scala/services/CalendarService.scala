@@ -6,11 +6,15 @@ import domain.CalendarError
 import java.time.ZonedDateTime
 import zio.ZLayer
 import config.Configuration.AppConfig
+import com.google.api.services.calendar.model.CalendarListEntry
+import domain.GoogleCalendar
 
 trait CalendarService:
     def getUpcomingEvents(
         days: Int
     ): ZIO[Any, CalendarError, List[CalendarEvent]]
+
+    def getCalendarList(): ZIO[Any, CalendarError, List[GoogleCalendar]]
 
 final class CalendarServiceLive(googleCalendarService: GoogleCalendarService)
     extends CalendarService:
@@ -26,6 +30,11 @@ final class CalendarServiceLive(googleCalendarService: GoogleCalendarService)
               timeMax = Some(plus3Days)
             )
         yield events
+
+    override def getCalendarList()
+        : ZIO[Any, CalendarError, List[GoogleCalendar]] =
+        for calendars <- googleCalendarService.listCalendars()
+        yield calendars
 
 object CalendarService:
     private val calendarServiceZIO =

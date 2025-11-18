@@ -26,6 +26,7 @@ import scala.jdk.CollectionConverters.ListHasAsScala
 // import domain.EventDateTime
 import _root_.config.Configuration.AppConfig
 import domain._
+import com.google.api.services.calendar.model.CalendarListEntry
 
 trait GoogleCalendarService:
     def listEvents(
@@ -34,6 +35,7 @@ trait GoogleCalendarService:
         timeMin: Option[ZonedDateTime] = None,
         timeMax: Option[ZonedDateTime] = None
     ): ZIO[Any, CalendarError, List[CalendarEvent]]
+    def listCalendars(): ZIO[Any, CalendarError, List[GoogleCalendar]]
 
 final class GoogleCalendarLive(config: AppConfig, calendar: Calendar)
     extends GoogleCalendarService:
@@ -70,22 +72,17 @@ final class GoogleCalendarLive(config: AppConfig, calendar: Calendar)
                 .map(_.asScala.toList)
                 .getOrElse(List.empty[Event])
                 .map(convertGoogleEvent)
-        .tapError(e =>
-                ZIO.logError(s"GoogleError: ${}, message: ${e.getMessage}")
-            )
+        .tapError(e => ZIO.logError(s"GoogleError: ${e.getMessage}"))
             .mapError:
                 case e: GoogleJsonResponseException if e.getStatusCode == 404 =>
                     CalendarError.NotFoundError(
                       s"Calendar not found"
                     )
-                case e: GoogleJsonResponseException if e.getStatusCode == 403 =>
-                    CalendarError.ServiceError(
-                      s"Google API error: ${e.getStatusCode}, ${e.getDetails}"
-                    )
                 case e: Throwable =>
                     CalendarError.ServiceError(
                       s"Failed to list events: ${e.getCause}"
                     )
+
     private def convertGoogleEvent(event: Event): CalendarEvent =
         val start = event.getStart
         val end = event.getEnd
@@ -115,6 +112,33 @@ final class GoogleCalendarLive(config: AppConfig, calendar: Calendar)
           updated = ZonedDateTime.parse(event.getUpdated.toStringRfc3339())
         )
 
+    private def convertCalendarListEntry(
+        calendarListEntry: CalendarListEntry
+    ): GoogleCalendar =
+        GoogleCalendar(
+          calendarListEntry.getId(),
+          calendarListEntry.getSummary(),
+          calendarListEntry.getDescription(),
+          calendarListEntry.getPrimary()
+        )
+    override def listCalendars()
+        : ZIO[Any, CalendarError, List[GoogleCalendar]] =
+        ZIO.attempt:
+            val res = calendar.calendarList.list.execute
+            Option(res.getItems().asScala.toList)
+                .getOrElse(List.empty[CalendarListEntry])
+                .map(convertCalendarListEntry)
+        .tapError(e => ZIO.logError(s"GoogleError: ${e.getMessage}"))
+            .mapError:
+                case e: GoogleJsonResponseException if e.getStatusCode == 404 =>
+                    CalendarError.NotFoundError(
+                      s"Calendar not found"
+                    )
+                case e: Throwable =>
+                    CalendarError.ServiceError(
+                      s"Failed to list events: ${e.getMessage}"
+                    )
+
 object GoogleCalendarService:
     val live: ZLayer[AppConfig, CalendarError, GoogleCalendarService] =
         ZLayer.scoped(
@@ -130,7 +154,7 @@ object GoogleCalendarService:
         ZIO.attempt:
             val credentials = ServiceAccountCredentials
                 .fromStream(
-                  FileInputStream(config.googleCalendar.keyFile)
+                  new FileInputStream(config.googleCalendar.keyFile)
                 )
                 .createScoped(
                   Collections.singletonList(CalendarScopes.CALENDAR)
