@@ -14,6 +14,7 @@ object Configuration:
     opaque type TelegramToken = String
     opaque type TelegramChatID = Long
     opaque type TelegramURL = String
+    opaque type TelegramChatUpdatesURL = String
     opaque type TelegramUserID = Long
 
     opaque type WeatherApiKey = String
@@ -27,7 +28,8 @@ object Configuration:
         chatID: TelegramChatID,
         baseURL: TelegramURL,
         lensID: TelegramUserID,
-        egolkaID: TelegramUserID
+        egolkaID: TelegramUserID,
+        chatUpdatesUrl: String
     )
 
     final case class WeatherApiConfig(
@@ -69,6 +71,11 @@ object Configuration:
         def apply(value: String): TelegramURL = value
         given Config[TelegramURL] =
             Config.string.map(TelegramURL(_))
+
+    object TelegramChatUpdatesURL:
+        def apply(value: String): TelegramChatUpdatesURL = value
+        given Config[TelegramChatUpdatesURL] =
+            Config.string.map(TelegramChatUpdatesURL(_))
 
     object TelegramChatID:
         def apply(value: Long): TelegramChatID = value
