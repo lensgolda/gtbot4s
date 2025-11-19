@@ -26,7 +26,8 @@ object Configuration:
         token: TelegramToken,
         chatID: TelegramChatID,
         baseURL: TelegramURL,
-        lensID: TelegramUserID
+        lensID: TelegramUserID,
+        egolkaID: TelegramUserID
     )
 
     final case class WeatherApiConfig(

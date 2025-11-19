@@ -1,29 +1,19 @@
 package services
 
 import _root_.config.Configuration.*
+import dto.*
 import zio.*
 import zio.http.*
-import zio.schema.*
-import zio.schema.annotation.fieldName
 import zio.schema.codec.JsonCodec.schemaBasedBinaryCodec
 
-trait TelegramService {
-    def sendMessage(message: String): ZIO[Any, Throwable, Unit]
-}
-
-final case class SendMessageRequest(
-    text: String,
-    @fieldName("chat_id") chatID: Long
-)
-
-object SendMessageRequest:
-    given Schema[SendMessageRequest] =
-        DeriveSchema.gen[SendMessageRequest]
+trait TelegramService:
+    def sendMessage(
+        chatID: Long,
+        message: String
+    ): ZIO[Any, Throwable, Unit]
 
 final class TelegramLive(config: AppConfig, httpClient: Client)
     extends TelegramService:
-
-    import SendMessageRequest._
 
     private val message = s"Test message"
     private val telegramUserID = config.telegram.lensID.value
@@ -32,7 +22,10 @@ final class TelegramLive(config: AppConfig, httpClient: Client)
       Header.Accept(MediaType.application.json)
     )
 
-    override def sendMessage(message: String): ZIO[Any, Throwable, Unit] =
+    override def sendMessage(
+        chatID: Long,
+        message: String
+    ): ZIO[Any, Throwable, Unit] =
         for
             baseUrl <- ZIO.fromEither(
               URL.decode(config.telegram.baseURL.toString)
@@ -42,7 +35,7 @@ final class TelegramLive(config: AppConfig, httpClient: Client)
                 .addHeaders(headers)
                 .post(s"bot${config.telegram.token}/sendMessage")(
                   Body.from[SendMessageRequest](
-                    SendMessageRequest(message, telegramUserID)
+                    SendMessageRequest(message, chatID)
                   )
                 )
             _ <- ZIO.logInfo(s"Response Status: ${resp.status}")

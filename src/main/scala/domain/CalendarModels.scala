@@ -1,6 +1,7 @@
 package domain
 
 import java.time.ZonedDateTime
+
 import zio.json.JsonCodec
 
 sealed trait CalendarError extends Exception
