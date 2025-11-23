@@ -28,9 +28,10 @@ object Gtbot4s extends ZIOAppDefault:
     val app = for
         _ <- ZIO.logInfo(">>> Gtbot4s start <<<") @@ loggerName("Gtbot4s")
         appConfig <- ZIO.service[AppConfig]
+        daysRange = appConfig.googleCalendar.daysRange
         idsList = List(
-          // appConfig.telegram.lensID.value,
-          // appConfig.telegram.egolkaID.value,
+          appConfig.telegram.lensID.value,
+          appConfig.telegram.egolkaID.value,
           appConfig.telegram.chatID.value
         )
         _ <- ZIO.logInfo(s"AppConfig: ${appConfig}") @@ loggerName("Gtbot4s")
@@ -38,7 +39,7 @@ object Gtbot4s extends ZIOAppDefault:
         // calendars <- ZIO.serviceWithZIO[CalendarService](_.getCalendarList())
         calendarService <- ZIO.service[CalendarService]
         telegramService <- ZIO.service[TelegramService]
-        events <- calendarService.getUpcomingEvents(3)
+        events <- calendarService.getUpcomingEvents(daysRange)
         message <- ZIO.attempt(CalendarEventFormatter.formatEventsList(events))
 
         _ <- ZIO.foreachParDiscard(idsList)(id =>

@@ -44,7 +44,8 @@ object Configuration:
 
     final case class GoogleCalendarConfig(
         keyFile: String,
-        targetCalendar: String
+        targetCalendar: String,
+        daysRange: Int
     )
 
     case class AppConfig(
