@@ -8,21 +8,14 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 import _root_.config.Configuration.*
+import domain.CbrRate
 import zio.*
 import zio.http.*
 import zio.schema.*
 
 import scala.xml.*
-import XmlCodec.*
 
-case class CbrRate(
-    numCode: String,
-    charCode: String,
-    nominal: String,
-    name: String,
-    value: String,
-    date: LocalDate
-)
+import XmlCodec.*
 
 trait Cbr {
     def fetchAll: ZIO[Any, Throwable, List[CbrRate]]
@@ -30,9 +23,6 @@ trait Cbr {
 
 final class CbrLive(config: AppConfig, httpClient: Client) extends Cbr:
     private val client = httpClient.batched
-
-    // import CbrRate._
-    // import XmlCodec._
 
     def parseDate(date: String): ZIO[Any, Throwable, LocalDate] =
         ZIO.attempt:
