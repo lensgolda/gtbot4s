@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  # push:
+  #   branches: [ main, master ]
+  # pull_request:
+  #   branches: [ main, master ]
+  schedule:
+    - cron: '10 7 * * 1-4'
+
+jobs:
+  execute:
+    name: Compile and Run
+    runs-on: ubuntu-latest
+    timeout-minutes: 30  # Prevent hanging
+
+    env:
+      TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_BOT_CHAT_ID: ${{ secrets.TELEGRAM_BOT_CHAT_ID }}
+      LENS_ID: ${{ secrets.LENS_ID }}
+      EGOLKA_ID: ${{ secrets.EGOLKA_ID }}
+      GOOGLE_CALENDAR_API_KEY: ${{ secrets.GOOGLE_CALENDAR_API_KEY }}
+      TARGET_CALENDAR: ${{ secrets.TARGET_CALENDAR }}
+      DAYS_RANGE: 1
+    
+    steps:
+    - uses: actions/checkout@main
+    - uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'sbt'
+    - uses: sbt/setup-sbt@v1
+
+
+    - name: Setup Google Cloud credentials
+      run: |
+        # Create service account key file
+        echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}' > /tmp/google-calendar-sa.json
+
+        # Set secure permissions
+        chmod 600 /tmp/google-calendar-sa.json
+        
+        # Validate JSON structure
+        if jq empty /tmp/google-calendar-sa.json; then
+          echo "✅ Service account key is valid JSON"
+        else
+          echo "❌ Invalid JSON in service account key"
+          exit 1
+        fi
+
+    - run: sbt compile
+    # - run: sbt test
+    
+    - name: Run application
+      run: sbt run
+      env:
+        GOOGLE_CALENDAR_KEY_FILE_PATH: /tmp/google-calendar-sa.json
+
+    - name: Run scalafmt check
+      run: sbt scalafmtCheckAll
