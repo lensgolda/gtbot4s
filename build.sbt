@@ -27,11 +27,17 @@ lazy val root = project
         "--add-opens=java.base/java.util=ALL-UNNAMED",
         "--add-opens=java.base/java.lang=ALL-UNNAMED"
       ),
+
+      // if local run, take env vars from .env file with sbtdotenv plugin
       if (!isCI) {
           import au.com.onegeek.sbtdotenv.SbtDotenv.autoImport.*
-          run / javaOptions ++= envVars.value.map { case (k, v) =>
-              s"-D$k=$v"
-          }.toSeq
+          Def.settings(
+            run / javaOptions ++= envVars.value.map { case (k, v) =>
+                s"-D$k=$v"
+            }.toSeq
+          )
+      } else {
+          Def.settings()
       }
 
       // run / envVars := envVars.value
