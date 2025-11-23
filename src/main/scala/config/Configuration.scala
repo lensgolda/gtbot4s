@@ -30,23 +30,52 @@ object Configuration:
         lensID: TelegramUserID,
         egolkaID: TelegramUserID,
         chatUpdatesUrl: String
-    )
+    ):
+        override def toString(): String =
+            s"""
+            |TelegramConfig(
+            | token=***, 
+            | chatID=***, 
+            | baseURL=$baseURL, 
+            | lensID=***,
+            | egolkaID=***,
+            | chatUpdatesUrl=$chatUpdatesUrl
+            |)"""
 
     final case class WeatherApiConfig(
         apiKey: WeatherApiKey,
         baseURL: WeatherApiURL
-    )
+    ):
+        override def toString(): String =
+            s"""
+            |WeatherApiConfig(
+            | apiKey=***, 
+            | baseURL=$baseURL
+            |)"""
 
     final case class CbrConfig(
         baseURL: CbrBaseURL,
         currencies: Set[CbrCurrency]
-    )
+    ):
+        override def toString(): String =
+            s"""
+            |CbrConfig(
+            | currencies=$currencies, 
+            | baseURL=$baseURL
+            |)"""
 
     final case class GoogleCalendarConfig(
         keyFile: String,
         targetCalendar: String,
         daysRange: Int
-    )
+    ):
+        override def toString(): String =
+            s"""
+                    |GoogleCalendarConfig(
+                    | keyFile=***,
+                    | targetCalendar=$targetCalendar, 
+                    | daysRange=$daysRange
+                    |)"""
 
     case class AppConfig(
         telegram: TelegramConfig,
