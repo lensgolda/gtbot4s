@@ -1,0 +1,27 @@
+<configuration>
+    <logger name="Gtbot4s"></logger>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSX</timestampFormat>
+                <timestampFormatTimezoneId>UTC</timestampFormatTimezoneId>
+                <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter">
+                    <prettyPrint>false</prettyPrint>
+                </jsonFormatter>
+                
+                <!-- Customize JSON output -->
+                <appendLineNumber>true</appendLineNumber>
+                <includeContextName>false</includeContextName>
+                
+                <!-- Custom fields -->
+                <customFields>{"service":"Gtbot4s","version":"0.0.1"}</customFields>
+            </layout>
+        </encoder>
+    </appender>
+    
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>
