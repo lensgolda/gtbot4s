@@ -1,4 +1,5 @@
 import Dependencies.*
+import au.com.onegeek.sbtdotenv.SbtDotenv.autoImport.*
 
 val isCI = sys.env.get("CI").contains("true")
 
@@ -30,7 +31,6 @@ lazy val root = project
 
       // if local run, take env vars from .env file with sbtdotenv plugin
       if (!isCI) {
-          import au.com.onegeek.sbtdotenv.SbtDotenv.autoImport.*
           Def.settings(
             run / javaOptions ++= envVars.value.map { case (k, v) =>
                 s"-D$k=$v"
