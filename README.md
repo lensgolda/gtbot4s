@@ -18,8 +18,8 @@ Tools & Utils
 - mise
 - Zed editor (See my [blog post](https://lensgolda.github.io/posts/zed-scala3/) for Scala3 setup)
 - VSCodium (Metals)
-- Github Actions (for remote scheduled runs)
-- .env configuration (for local runs) with plugins
+- Github Actions (for remote scheduled runs, see `.github/workflow/ci.yaml` config at project root)
+- .env configuration (for local runs, with sbt-dotenv plugin)
 
 ### Usage
 
