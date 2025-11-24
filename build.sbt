@@ -4,9 +4,6 @@ import au.com.onegeek.sbtdotenv.SbtDotenv.autoImport.*
 val isCI = sys.env.get("CI").contains("true")
 
 ThisBuild / organization := "com.github.lensgolda"
-// ThisBuild / run / javaOptions ++= envVars.value.map { case (k, v) =>
-//     s"-D$k=$v"
-// }.toSeq
 
 val scala3Version = "3.3.6"
 
@@ -34,11 +31,10 @@ lazy val root = project
           Def.settings(
             run / javaOptions ++= envVars.value.map { case (k, v) =>
                 s"-D$k=$v"
-            }.toSeq
+            }.toSeq,
+            run / envVars := envVars.value
           )
       } else {
           Def.settings()
       }
-
-      // run / envVars := envVars.value
     )

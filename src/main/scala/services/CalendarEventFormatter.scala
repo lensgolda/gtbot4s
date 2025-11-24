@@ -3,9 +3,11 @@ package services
 import java.time.format.DateTimeFormatter
 import java.time.ZonedDateTime
 import domain.CalendarEvent
+import java.util.Locale
 
 object CalendarEventFormatter:
-    private val dayOfWeekFormatter = DateTimeFormatter.ofPattern("EEE")
+    private val dayOfWeekFormatter =
+        DateTimeFormatter.ofPattern("EEE", Locale.of("ru", "RU"))
     private val time24hFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
     def formatEvent(event: CalendarEvent): String =
@@ -16,7 +18,7 @@ object CalendarEventFormatter:
                 val endTime = event.end.dateTime
                     .map(_.format(time24hFormatter))
                     .getOrElse("")
-                s"📅 $dayOfWeek $timeStart - $endTime | 📍 ${event.summary}"
+                s"🗓️ $dayOfWeek $timeStart - $endTime | 📍 ${event.summary}"
 
             case None =>
                 // All-day event or date-only

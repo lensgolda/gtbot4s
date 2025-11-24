@@ -35,8 +35,6 @@ object Gtbot4s extends ZIOAppDefault:
           appConfig.telegram.chatID.value
         )
         _ <- ZIO.logInfo(s"AppConfig: ${appConfig}") @@ loggerName("Gtbot4s")
-        // ratesList <- ZIO.serviceWithZIO[Cbr](_.fetchAll)
-        // calendars <- ZIO.serviceWithZIO[CalendarService](_.getCalendarList())
         calendarService <- ZIO.service[CalendarService]
         telegramService <- ZIO.service[TelegramService]
         events <- calendarService.getUpcomingEvents(daysRange)

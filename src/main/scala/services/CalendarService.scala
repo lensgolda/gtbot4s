@@ -7,6 +7,8 @@ import config.Configuration.AppConfig
 import domain.*
 import zio.ZIO
 import zio.ZLayer
+import java.time.LocalDateTime
+import java.time.LocalDate
 
 trait CalendarService:
     def getUpcomingEvents(
@@ -22,13 +24,12 @@ final class CalendarServiceLive(googleCalendarService: GoogleCalendarService)
     ): ZIO[Any, CalendarError, List[CalendarEvent]] =
         for
             now <- ZIO.succeed(
-              ZonedDateTime.now(ZoneId.of("Europe/Kaliningrad"))
+              LocalDate.now.atStartOfDay(ZoneId.of("Europe/Kaliningrad"))
             )
-            plus3Days = now.plusDays(days)
             events <- googleCalendarService.listEvents(
-              maxResults = 10,
+              maxResults = 15,
               timeMin = Some(now),
-              timeMax = Some(plus3Days)
+              timeMax = Some(now.plusDays(days))
             )
         yield events
 
