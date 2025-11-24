@@ -1,4 +1,25 @@
-## sbt project compiled with Scala 3
+## Gtbot4s
+
+Telegram bot, which receive Google Calendar events end send simple message with timings to Telegram in format:
+
+```
+🗓️ DayOfWeek(short) timeStart - endTime | 📍 Event Summary"
+```
+
+### Tech stack used:
+- Scala3
+- ZIO(http,json,schema,logging,config)
+- sbt
+- Telegram Bot API
+- GCA (Google Cloud API - Calendar)
+- Google Service Account IAM
+- XML feed (CBR) for exchage rates info
+Tools & Utils
+- mise
+- Zed editor (See my [blog post](https://lensgolda.github.io/posts/zed-scala3/) for Scala3 setup)
+- VSCodium (Metals)
+- Github Actions (for remote scheduled runs)
+- .env configuration (for local runs) with plugins
 
 ### Usage
 
