@@ -1,9 +1,10 @@
 package services
 
-import zio._
-import zio.logging._
 import com.google.api.services.calendar.Calendar
-import scala.jdk.CollectionConverters._
+import zio.*
+import zio.logging.*
+
+import scala.jdk.CollectionConverters.*
 
 object CalendarDebugService {
 

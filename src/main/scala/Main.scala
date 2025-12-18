@@ -1,6 +1,7 @@
 import java.io.IOException
 
 import _root_.config.Configuration.*
+import extensions.CalendarEventFormatter.format
 import services.*
 import zio.*
 import zio.config.*
@@ -10,42 +11,42 @@ import zio.http.*
 import zio.http.netty.NettyConfig
 import zio.http.netty.client.NettyClientDriver
 import zio.http.netty.server.NettyDriver
-import zio.logging.ConsoleLoggerConfig
-import zio.logging.LogFormat
+import zio.logging.*
 import zio.logging.backend.SLF4J
-import zio.logging.consoleJsonLogger
-import zio.logging.loggerName
 
 object Gtbot4s extends ZIOAppDefault:
 
     override val bootstrap: ZLayer[ZIOAppArgs, Any, Any] =
         Runtime.removeDefaultLoggers >>> SLF4J.slf4j
 
-    val clientConfig = ZClient.Config.default
+    val clientConfig: zio.http.ZClient.Config = ZClient.Config.default
         .connectionTimeout(500.milliseconds)
         .idleTimeout(1500.milliseconds)
 
-    val app = for
-        _ <- ZIO.logInfo(">>> Gtbot4s start <<<") @@ loggerName("Gtbot4s")
-        appConfig <- ZIO.service[AppConfig]
-        daysRange = appConfig.googleCalendar.daysRange
-        idsList = List(
-          appConfig.telegram.lensID.value,
-          appConfig.telegram.egolkaID.value,
-          appConfig.telegram.chatID.value
-        )
-        _ <- ZIO.logInfo(s"AppConfig: ${appConfig}") @@ loggerName("Gtbot4s")
-        calendarService <- ZIO.service[CalendarService]
-        telegramService <- ZIO.service[TelegramService]
-        events <- calendarService.getUpcomingEvents(daysRange)
-        message <- ZIO.attempt(CalendarEventFormatter.formatEventsList(events))
+    val app
+        : ZIO[AppConfig & TelegramService & CalendarService, Throwable, Unit] =
+        for
+            _ <- ZIO.logInfo(">>> Gtbot4s start <<<") @@ loggerName("Gtbot4s")
+            appConfig <- ZIO.service[AppConfig]
+            _ <- ZIO.logDebug(s"AppConfig: ${appConfig}") @@ loggerName(
+              "Gtbot4s"
+            )
 
-        _ <- ZIO.foreachParDiscard(idsList)(id =>
-            telegramService.sendMessage(id, message)
-        )
-    yield ()
+            events <- CalendarService.getUpcomingEvents
+            message <- ZIO.attempt(events.format)
+            telegramService <- ZIO.service[TelegramService]
 
-    override val run = app
+            idsList = List(
+              appConfig.telegram.lensID.value,
+              appConfig.telegram.egolkaID.value,
+              appConfig.telegram.chatID.value
+            )
+            _ <- ZIO.foreachParDiscard(idsList)(id =>
+                telegramService.sendMessage(id, message)
+            )
+        yield ()
+
+    override val run: ZIO[Environment & (ZIOAppArgs & Scope), Any, Any] = app
         .foldCauseZIO(
           failure => ZIO.logErrorCause(failure),
           success => ZIO.logInfo(">>> Success! <<<") @@ loggerName("Gtbot4s")
@@ -62,6 +63,7 @@ object Gtbot4s extends ZIOAppDefault:
           NettyClientDriver.live,
           ZLayer.succeed(NettyConfig.default),
           ZLayer.succeed(clientConfig)
+          // HttpClientService.layer
           // Debug
           // Scope.default,
         )

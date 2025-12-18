@@ -5,7 +5,7 @@ val isCI = sys.env.get("CI").contains("true")
 
 ThisBuild / organization := "com.github.lensgolda"
 
-val scala3Version = "3.3.6"
+val scala3Version = "3.3.7"
 
 lazy val root = project
     .in(file("."))

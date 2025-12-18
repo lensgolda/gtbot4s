@@ -1,6 +1,8 @@
-package domain
+package domain.rates
 
 import java.time.LocalDate
+
+type Rates = Seq[CbrRate]
 
 case class CbrRate(
     numCode: String,

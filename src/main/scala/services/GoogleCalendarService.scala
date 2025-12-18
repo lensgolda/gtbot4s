@@ -16,7 +16,7 @@ import com.google.api.services.calendar.model.CalendarListEntry
 import com.google.api.services.calendar.model.Event
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.ServiceAccountCredentials
-import domain.*
+import domain.calendar.*
 import zio.*
 import zio.http.*
 
@@ -28,8 +28,8 @@ trait GoogleCalendarService:
         maxResults: Int = 50,
         timeMin: Option[ZonedDateTime] = None,
         timeMax: Option[ZonedDateTime] = None
-    ): ZIO[Any, CalendarError, List[CalendarEvent]]
-    def listCalendars(): ZIO[Any, CalendarError, List[GoogleCalendar]]
+    ): IO[CalendarError, CalendarEvents]
+    def listCalendars: IO[CalendarError, GoogleCalendars]
 
 final class GoogleCalendarLive(config: AppConfig, calendar: Calendar)
     extends GoogleCalendarService:
@@ -42,7 +42,7 @@ final class GoogleCalendarLive(config: AppConfig, calendar: Calendar)
         maxResults: Int,
         timeMin: Option[ZonedDateTime],
         timeMax: Option[ZonedDateTime]
-    ): ZIO[Any, CalendarError, List[CalendarEvent]] =
+    ): IO[CalendarError, CalendarEvents] =
         ZIO.attempt:
             val cID = calendarID.getOrElse(config.googleCalendar.targetCalendar)
             val req = calendar.events
@@ -114,8 +114,7 @@ final class GoogleCalendarLive(config: AppConfig, calendar: Calendar)
           calendarListEntry.getDescription,
           calendarListEntry.getPrimary
         )
-    override def listCalendars()
-        : ZIO[Any, CalendarError, List[GoogleCalendar]] =
+    override def listCalendars: ZIO[Any, CalendarError, GoogleCalendars] =
         ZIO.attempt:
             val res = calendar.calendarList.list.execute
             Option(res.getItems.asScala.toList)
