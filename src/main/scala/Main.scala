@@ -64,5 +64,6 @@ object Gtbot4s extends ZIOAppDefault:
           ZLayer.succeed(NettyConfig.default),
           ZLayer.succeed(clientConfig)
           // Debug
+          // ZLayer.Debug.tree
           // Scope.default,
         )
