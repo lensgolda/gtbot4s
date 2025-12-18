@@ -1,8 +1,11 @@
-package domain
+package domain.calendar
 
 import java.time.ZonedDateTime
 
 import zio.json.JsonCodec
+
+type GoogleCalendars = Seq[GoogleCalendar]
+type CalendarEvents = Seq[CalendarEvent]
 
 sealed trait CalendarError extends Exception
 

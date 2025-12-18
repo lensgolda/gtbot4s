@@ -10,7 +10,7 @@ trait TelegramService:
     def sendMessage(
         chatID: Long,
         message: String
-    ): ZIO[Any, Throwable, Unit]
+    ): Task[Unit]
 
 final class TelegramLive(config: AppConfig, httpClient: Client)
     extends TelegramService:
@@ -25,7 +25,7 @@ final class TelegramLive(config: AppConfig, httpClient: Client)
     override def sendMessage(
         chatID: Long,
         message: String
-    ): ZIO[Any, Throwable, Unit] =
+    ): Task[Unit] =
         for
             baseUrl <- ZIO.fromEither(
               URL.decode(config.telegram.baseURL.toString)
@@ -38,15 +38,12 @@ final class TelegramLive(config: AppConfig, httpClient: Client)
                     SendMessageRequest(message, chatID)
                   )
                 )
-            _ <- ZIO.logInfo(s"Response Status: ${resp.status}")
-            _ <- ZIO.logInfo(s"Response Body: ${resp.body.asString}")
+            _ <- ZIO.logDebug(s"Response Status: ${resp.status}")
+            _ <- ZIO.logDebug(s"Response Body: ${resp.body.asString}")
         yield ()
 
 object TelegramService:
-    private val telegramServiceZIO = for
-        appConfig <- ZIO.service[AppConfig]
-        client <- ZIO.service[Client]
-    yield new TelegramLive(appConfig, client)
-
-    val live: ZLayer[AppConfig & Client, Throwable, TelegramService] =
-        ZLayer.fromZIO(telegramServiceZIO)
+    val live: RLayer[AppConfig & Client, TelegramService] =
+        ZLayer.fromFunction((appConfig: AppConfig, client: Client) =>
+            new TelegramLive(appConfig, client)
+        )
