@@ -1,9 +1,9 @@
 package dto
 
 import zio.json.JsonCodec
-import zio.schema.annotation.fieldName
 import zio.schema.DeriveSchema
 import zio.schema.Schema
+import zio.schema.annotation.fieldName
 
 final case class SendMessageRequest(
     text: String,

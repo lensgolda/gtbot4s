@@ -63,7 +63,6 @@ object Gtbot4s extends ZIOAppDefault:
           NettyClientDriver.live,
           ZLayer.succeed(NettyConfig.default),
           ZLayer.succeed(clientConfig)
-          // HttpClientService.layer
           // Debug
           // Scope.default,
         )

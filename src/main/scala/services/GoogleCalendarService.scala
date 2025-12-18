@@ -17,6 +17,7 @@ import com.google.api.services.calendar.model.Event
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.ServiceAccountCredentials
 import domain.calendar.*
+import extensions.GoogleCalendarConverter.*
 import zio.*
 import zio.http.*
 
@@ -43,7 +44,7 @@ final class GoogleCalendarLive(config: AppConfig, calendar: Calendar)
         timeMin: Option[ZonedDateTime],
         timeMax: Option[ZonedDateTime]
     ): IO[CalendarError, CalendarEvents] =
-        ZIO.attempt:
+        ZIO.attemptBlocking:
             val cID = calendarID.getOrElse(config.googleCalendar.targetCalendar)
             val req = calendar.events
                 .list(cID)
@@ -76,45 +77,7 @@ final class GoogleCalendarLive(config: AppConfig, calendar: Calendar)
                       s"Failed to list events: ${e.getCause}"
                     )
 
-    private def convertGoogleEvent(event: Event): CalendarEvent =
-        val start = event.getStart
-        val end = event.getEnd
-
-        CalendarEvent(
-          event.getId,
-          Option(event.getSummary)
-              .getOrElse(String("Название встречи отсутствует")),
-          Option(event.getDescription),
-          EventDateTime(
-            date = Option(start.getDate).map(_.toString),
-            dateTime = Option(start.getDateTime).map(dt =>
-                ZonedDateTime.parse(dt.toStringRfc3339)
-            ),
-            timeZone = Option(start.getTimeZone)
-          ),
-          EventDateTime(
-            date = Option(end.getDate).map(_.toString),
-            dateTime = Option(end.getDateTime).map(dt =>
-                ZonedDateTime.parse(dt.toStringRfc3339)
-            ),
-            timeZone = Option(end.getTimeZone)
-          ),
-          location = Option(event.getLocation),
-          status = event.getStatus,
-          created = ZonedDateTime.parse(event.getCreated.toStringRfc3339),
-          updated = ZonedDateTime.parse(event.getUpdated.toStringRfc3339)
-        )
-
-    private def convertCalendarListEntry(
-        calendarListEntry: CalendarListEntry
-    ): GoogleCalendar =
-        GoogleCalendar(
-          calendarListEntry.getId,
-          calendarListEntry.getSummary,
-          calendarListEntry.getDescription,
-          calendarListEntry.getPrimary
-        )
-    override def listCalendars: ZIO[Any, CalendarError, GoogleCalendars] =
+    override def listCalendars: IO[CalendarError, GoogleCalendars] =
         ZIO.attempt:
             val res = calendar.calendarList.list.execute
             Option(res.getItems.asScala.toList)
